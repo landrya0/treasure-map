@@ -2,6 +2,7 @@ package it.carbon.exercice.treasuremap.domain.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,11 +40,72 @@ public class TreasureMapBuilderTest {
 
         assertThat(treasureMap.boxes().stream()
                 .flatMap(box -> box.items().stream()))
-                .allMatch(boxItem -> boxItem.boxItemType() == BoxItem.BoxItemType.PLAIN);
+                .allMatch(boxItem -> boxItem instanceof Plain);
 
         assertThat(treasureMap.boxes().stream()
                 .map(Box::items))
                 .allMatch(box -> box.size() == 1);
+    }
+
+    @Test
+    public void shouldAddMountainsToMap() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var mountain1Position = new Position(2, 3);
+        var mountain2Position = new Position(1, 2);
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withMountain(mountain1Position)
+                .withMountain(mountain2Position)
+                .build();
+
+        // Then
+        assertThat(treasureMap.getBox(new Position(2, 3)).items().get(0)).isInstanceOf(Mountain.class);
+        assertThat(treasureMap.getBox(new Position(1, 2)).items().get(0)).isInstanceOf(Mountain.class);
+    }
+
+    @Test
+    public void shouldIgnoreMountainAdd_when_positionAlreadyContainsOne() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var position = new Position(2, 3);
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withMountain(position)
+                .withMountain(position)
+                .build();
+
+        // Then
+        assertThat(treasureMap.getBox(new Position(2, 3)).items().get(0)).isInstanceOf(Mountain.class);
+    }
+
+    @Test
+    public void shouldIgnoreMountainAdd_when_mountainPositionIsInvalid() {
+
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var invalidPosition = new Position(5, 10);
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withMountain(invalidPosition)
+                .build();
+
+        //Then
+        assertThat(treasureMap.boxes().stream().map(Box::items).flatMap(Collection::stream)
+                .noneMatch(item -> item instanceof Mountain))
+                .isTrue();
     }
 
 
