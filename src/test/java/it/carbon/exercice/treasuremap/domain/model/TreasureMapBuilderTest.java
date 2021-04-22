@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TreasureMapBuilderTest {
 
@@ -45,6 +46,18 @@ public class TreasureMapBuilderTest {
         assertThat(treasureMap.boxes().stream()
                 .map(Box::items))
                 .allMatch(box -> box.size() == 1);
+    }
+
+    @Test
+    public void shouldNotCreateMApToMap_when_DimensionsAreHeightIsNull() {
+
+        // When
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+            TreasureMap.builder().build()
+        );
+
+        // Then
+        assertThat(exception).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -108,5 +121,63 @@ public class TreasureMapBuilderTest {
                 .isTrue();
     }
 
+    @Test
+    public void shouldAddTreasuresToMap() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var position = new Position(2, 3);
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withTreasure(position, 3)
+                .build();
+
+        //Then
+        assertThat(treasureMap.getBox(position).items()).hasSize(3);
+        assertThat(treasureMap.getBox(position).items()).allMatch(boxItem -> boxItem instanceof Treasure);
+    }
+
+    @Test
+    public void shouldNotAddTreasuresToMap_when_MountainWasAlreadyAtPosition() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var position = new Position(2, 3);
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withMountain(position)
+                .withTreasure(position, 3)
+                .build();
+
+        //Then
+        assertThat(treasureMap.getBox(position).items()).hasSize(1);
+        assertThat(treasureMap.getBox(position).items()).allMatch(boxItem -> boxItem instanceof Mountain);
+    }
+
+    @Test
+    public void shouldNotAddTreasuresToMap_when_TreasuresWasAlreadyAtPosition() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var position = new Position(2, 3);
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withTreasure(position, 5)
+                .withTreasure(position, 3)
+                .build();
+
+        //Then
+        assertThat(treasureMap.getBox(position).items()).hasSize(5);
+        assertThat(treasureMap.getBox(position).items()).allMatch(boxItem -> boxItem instanceof Treasure);
+    }
 
 }
