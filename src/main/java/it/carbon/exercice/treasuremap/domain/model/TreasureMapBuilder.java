@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-class TreasureMapBuilder {
+public class TreasureMapBuilder {
     private Integer width;
     private Integer height;
     private final List<Position> mountainPositions = new ArrayList<>();

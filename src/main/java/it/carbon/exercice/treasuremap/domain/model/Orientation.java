@@ -1,20 +1,20 @@
 package it.carbon.exercice.treasuremap.domain.model;
 
-public interface Orientation {
+public sealed interface Orientation permits North, South, East, West{
     Orientation SOUTH = new South();
     Orientation NORTH = new North();
     Orientation EAST = new East();
     Orientation WEST = new West();
 }
 
-final class North implements Orientation {
+final record North() implements Orientation {
 }
 
-final class South implements Orientation {
+final record South() implements Orientation {
 }
 
-final class East implements Orientation {
+final record East() implements Orientation {
 }
 
-final class West implements Orientation {
+final record West() implements Orientation {
 }
