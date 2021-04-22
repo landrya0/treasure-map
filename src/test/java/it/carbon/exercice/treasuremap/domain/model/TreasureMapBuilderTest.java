@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.List;
 
+import static it.carbon.exercice.treasuremap.domain.model.Motion.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -53,7 +54,7 @@ public class TreasureMapBuilderTest {
 
         // When
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-            TreasureMap.builder().build()
+                TreasureMap.builder().build()
         );
 
         // Then
@@ -178,6 +179,78 @@ public class TreasureMapBuilderTest {
         //Then
         assertThat(treasureMap.getBox(position).items()).hasSize(5);
         assertThat(treasureMap.getBox(position).items()).allMatch(boxItem -> boxItem instanceof Treasure);
+    }
+
+    @Test
+    public void shouldAddPlayers() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var mountainPosition = new Position(2, 3);
+        var treasurePosition = new Position(2, 2);
+        var player1 = new Player("Jean", new Position(1, 1), Orientation.SOUTH,
+                List.of(MOVE_FORWARD, TURN_LEFT, TURN_RIGHT));
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withMountain(mountainPosition)
+                .withTreasure(treasurePosition, 2)
+                .withPlayer(player1)
+                .build();
+
+        // Then
+        assertThat(treasureMap.getBox(player1.initialPosition()).items()).hasSize(2);
+        assertThat(treasureMap.getBox(player1.initialPosition()).items().stream()
+                .filter(boxItem -> boxItem instanceof Player)).hasSize(1);
+
+        assertThat(treasureMap.getBox(player1.initialPosition()).items().stream()
+                .filter(boxItem -> boxItem instanceof Plain)).hasSize(1);
+    }
+
+    @Test
+    public void shouldIgnoreAddPlayers_when_boxContainsMountain() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var mountainPosition = new Position(2, 3);
+        var player1 = new Player("Jean", mountainPosition, Orientation.SOUTH,
+                List.of(MOVE_FORWARD, TURN_LEFT, TURN_RIGHT));
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withMountain(mountainPosition)
+                .withPlayer(player1)
+                .build();
+
+        // Then
+        assertThat(treasureMap.getBox(player1.initialPosition()).items().stream()
+                .filter(boxItem -> boxItem instanceof Player)).hasSize(0);
+    }
+
+    @Test
+    public void shouldIgnoreAddPlayers_when_boxContainsTreasure() {
+        // Given
+        var mapWidth = 3;
+        var mapHeight = 4;
+        var treasurePosition = new Position(2, 3);
+        var player1 = new Player("Jean", treasurePosition, Orientation.SOUTH,
+                List.of(MOVE_FORWARD, TURN_LEFT, TURN_RIGHT));
+
+        // When
+        TreasureMap treasureMap = TreasureMap.builder()
+                .withWidth(mapWidth)
+                .withHeight(mapHeight)
+                .withTreasure(treasurePosition, 3)
+                .withPlayer(player1)
+                .build();
+
+        // Then
+        assertThat(treasureMap.getBox(player1.initialPosition()).items().stream()
+                .filter(boxItem -> boxItem instanceof Player)).hasSize(0);
     }
 
 }

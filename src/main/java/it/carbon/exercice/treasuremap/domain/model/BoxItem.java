@@ -1,15 +1,15 @@
 package it.carbon.exercice.treasuremap.domain.model;
 
-public abstract sealed class BoxItem {
+public sealed interface BoxItem permits Plain, Mountain, Treasure, Player {
 }
 
-final class Plain extends BoxItem {
+final class Plain implements BoxItem {
 }
 
-final class Mountain extends BoxItem {
+final class Mountain implements BoxItem {
 }
 
-final class Treasure extends  BoxItem {
+final class Treasure implements BoxItem {
 }
 
 

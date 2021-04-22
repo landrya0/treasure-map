@@ -12,6 +12,7 @@ class TreasureMapBuilder {
     private Integer height;
     private final List<Position> mountainPositions = new ArrayList<>();
     private final Map<Position, Integer> treasureRecords = new HashMap<>();
+    private final Map<Position, Player> playersMap = new HashMap<>();
 
     public TreasureMapBuilder withWidth(int width) {
         this.width = width;
@@ -41,6 +42,11 @@ class TreasureMapBuilder {
         return this;
     }
 
+    public TreasureMapBuilder withPlayer(Player player) {
+        playersMap.put(player.initialPosition(), player);
+        return this;
+    }
+
     public TreasureMap build() {
         List<Box> boxList = new ArrayList<>();
         if (width == null || height == null) {
@@ -58,7 +64,13 @@ class TreasureMapBuilder {
                             .collect(Collectors.toList());
                     boxList.add(new Box(currentPosition, treasures));
                 } else {
-                    boxList.add(new Box(currentPosition, List.of(new Plain())));
+                    List<BoxItem> items = new ArrayList<>();
+                    items.add(new Plain());
+                    if (playersMap.containsKey(currentPosition)) {
+                        items.add(playersMap.get(currentPosition));
+                    }
+                    Box box = new Box(currentPosition, items);
+                    boxList.add(box);
                 }
             }
         }
