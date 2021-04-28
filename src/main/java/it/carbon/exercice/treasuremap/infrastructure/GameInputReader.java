@@ -1,6 +1,7 @@
 package it.carbon.exercice.treasuremap.infrastructure;
 
 import it.carbon.exercice.treasuremap.domain.model.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,26 +19,42 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.parseInt;
 
 @Component
-public class MapFileReader {
+public class GameInputReader {
 
-    private static final String INPUT_FILE_SEPARATOR = "-";
+    @Value("${input.default.file.path}")
+    private String inputDefaultFilePath;
+    @Value("${input.file.separator}")
+    private String inputFileSeparator;
 
-    public static TreasureMap read(String inputFilePath) throws IOException {
+    public GameData read(String inputFilePath) throws IOException {
         var inputLines = Files.readAllLines(Path.of(inputFilePath));
+
+        printInitialMap(inputLines);
         return read(inputLines);
     }
 
-    public static TreasureMap readFromClasspath(String inputFilePath) throws IOException {
-        InputStream resource = new ClassPathResource(inputFilePath).getInputStream();
+    private void printInitialMap(List<String> inputLines) {
+        System.out.println("------------------- initial treasureMap ----------------------");
+        System.out.println(String.join("\n", inputLines));
+    }
+
+    public GameData readFromClasspath() throws IOException {
+        InputStream resource = new ClassPathResource(inputDefaultFilePath).getInputStream();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
             var inputLines = reader.lines().collect(Collectors.toList());
+            printInitialMap(inputLines);
             return read(inputLines);
         }
     }
 
-    private static TreasureMap read(List<String> lines) {
+    private GameData read(List<String> lines) {
+        List<Player> players = new ArrayList<>();
         TreasureMapBuilder mapBuilder = TreasureMap.builder();
-        lines.stream().map(line -> Arrays.stream(line.trim().split(INPUT_FILE_SEPARATOR)).map(String::trim).toList()).forEach(line -> {
+        List<List<String>> linesArrayLists = lines.stream()
+                .map(line -> Arrays.stream(line.trim().split(inputFileSeparator))
+                .map(String::trim).toList())
+                .toList();
+        linesArrayLists.forEach(line -> {
             switch (line.get(0)) {
                 case "C":
                     mapBuilder.withWidth(parseInt(line.get(1)));
@@ -48,21 +66,31 @@ public class MapFileReader {
                 case "T":
                     mapBuilder.withTreasure(new Position(parseInt(line.get(1)), parseInt(line.get(2))), parseInt(line.get(3)));
                     break;
-                case "A":
-                    mapBuilder.withPlayer(new Player(
-                            line.get(1),
-                            new Position(parseInt(line.get(2)), parseInt(line.get(3))),
-                            mapOrientation(line.get(4)),
-                            mapMotionSequence(line.get(5))
-                    ));
-                    break;
-                case "#":
+                case "A", "#":
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + line.get(0));
             }
         });
-        return mapBuilder.build();
+
+        TreasureMap treasureMap = mapBuilder.build();
+
+        linesArrayLists.forEach(line -> {
+            if (line.get(0).equals("A")) {
+                Player player = new Player(
+                        line.get(1),
+                        mapMotionSequence(line.get(5)),
+                        treasureMap,
+                        new Position(parseInt(line.get(2)), parseInt(line.get(3))),
+                        mapOrientation(line.get(4))
+                );
+                players.add(player);
+            }
+        });
+
+        treasureMap.setPlayers(players);
+
+        return new GameData(treasureMap, players);
     }
 
     private static Orientation mapOrientation(String symbol) {
@@ -82,7 +110,7 @@ public class MapFileReader {
 
     private static List<Motion> mapMotionSequence(String motionSequenceString) {
         return Arrays.stream(motionSequenceString.split(""))
-                .map(MapFileReader::mapMotionSymbol)
+                .map(GameInputReader::mapMotionSymbol)
                 .collect(Collectors.toList());
     }
 
@@ -97,5 +125,8 @@ public class MapFileReader {
             default:
                 throw new IllegalStateException("Unexpected value: " + symbol);
         };
+    }
+
+    public record GameData(TreasureMap treasureMap, List<Player> players) {
     }
 }

@@ -1,9 +1,8 @@
 package it.carbon.exercice.treasuremap.application;
 
-import it.carbon.exercice.treasuremap.domain.model.TreasureMap;
 import it.carbon.exercice.treasuremap.domain.usecase.PlayGameUseCase;
-import it.carbon.exercice.treasuremap.infrastructure.MapFileReader;
-import it.carbon.exercice.treasuremap.infrastructure.MapToTextConverter;
+import it.carbon.exercice.treasuremap.infrastructure.GameInputReader;
+import it.carbon.exercice.treasuremap.infrastructure.GameOutputWritter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -11,29 +10,30 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppRunner implements CommandLineRunner {
 
-    public static final String DEFAULT_INPUT_FILE = "default-input-file.txt";
-
     @Autowired
     private PlayGameUseCase playGameUseCase;
     @Autowired
-    private MapToTextConverter mapToTextConverter;
+    private GameOutputWritter gameOutputWritter;
+    @Autowired
+    private GameInputReader gameInputReader;
 
     @Override
     public void run(String... args) throws Exception {
 
-        TreasureMap treasureMap = args.length > 0 ?
-                MapFileReader.read(args[0]) :
-                MapFileReader.readFromClasspath(DEFAULT_INPUT_FILE);
+        GameInputReader.GameData gameData = args.length > 0 ?
+                gameInputReader.read(args[0]) :
+                gameInputReader.readFromClasspath();
 
-
-        playGameUseCase.startGame(treasureMap);
+        playGameUseCase.startGame(gameData.treasureMap(), gameData.players());
         PlayGameUseCase.RoundResult roundResult;
+        int round = 0;
         do {
             roundResult = playGameUseCase.playNextRound();
+            System.out.println("--------------------- Round " + round + " -------------------");
+            System.out.println(gameOutputWritter.convertToString(roundResult.treasureMap(), roundResult.players()));
+            round++;
         } while (roundResult.hasNextRound());
 
-        System.out.println(mapToTextConverter.convert(treasureMap));
-
-
+        gameOutputWritter.writeToFile(roundResult.treasureMap(), roundResult.players());
     }
 }

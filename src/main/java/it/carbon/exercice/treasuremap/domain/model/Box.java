@@ -1,35 +1,54 @@
 package it.carbon.exercice.treasuremap.domain.model;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
-public record Box(Position position, List<BoxItem> items) {
+public final class Box {
+    private final Position position;
+    private final BoxType type;
+    private int treasureQuantity;
 
-    public boolean isPlainBox() {
-        return items.size() == 1 && items.get(0) instanceof Plain;
+    public Box(Position position, BoxType type) {
+        this.position = position;
+        this.type = type;
+        this.treasureQuantity = 0;
+    }
+
+    public Box(Position position, int treasureQuantity) {
+        this.position = position;
+        this.type = BoxType.PLAIN;
+        this.treasureQuantity = treasureQuantity;
+    }
+
+    public Box(Position position) {
+        this.position = position;
+        this.type = BoxType.PLAIN;
+        this.treasureQuantity = 0;
     }
 
     public boolean isMountainBox() {
-        return items.size() == 1 && items.get(0) instanceof Mountain;
+        return type == BoxType.MOUNTAIN;
     }
 
     public boolean containsTreasure() {
-        return items.stream().anyMatch(item -> item instanceof Treasure);
+        return treasureQuantity > 0;
     }
 
-    public boolean hasPlayer() {
-        return items.stream().anyMatch(item -> item instanceof Player);
+    public void retrieveTreasury() {
+        if(treasureQuantity > 0) {
+            treasureQuantity--;
+        }
     }
 
-    public long treasuresCount() {
-        return items.stream().filter(item -> item instanceof Treasure).count();
+    public Position getPosition() {
+        return position;
     }
 
-    public Player getPlayer() {
-        return items.stream().filter(item -> item instanceof Player)
-                .map(item -> (Player) item)
-                .findFirst().orElse(null);
-
+    public BoxType getType() {
+        return type;
     }
 
+    public int getTreasureQuantity() {
+        return treasureQuantity;
+    }
+
+    enum BoxType {PLAIN, MOUNTAIN}
 }

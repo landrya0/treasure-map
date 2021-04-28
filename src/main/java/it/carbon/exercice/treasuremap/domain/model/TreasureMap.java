@@ -1,21 +1,28 @@
 package it.carbon.exercice.treasuremap.domain.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public record TreasureMap(List<Box> boxes) {
+public final class TreasureMap {
+    private final List<Box> boxes;
+    private List<Player> players = new ArrayList<>();
+
+    public TreasureMap(List<Box> boxes) {
+        this.boxes = boxes;
+    }
 
     public Box getBox(Position position) {
-        return boxes.stream().filter(box -> box.position().equals(position)).findFirst()
+        return boxes.stream().filter(box -> box.getPosition().equals(position)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Could not find box at position " + position));
     }
 
     public int getWidth() {
-        return 1 + boxes.stream().map(Box::position).map(Position::horizontalAxis)
+        return 1 + boxes.stream().map(Box::getPosition).map(Position::horizontalAxis)
                 .max(Integer::compareTo).orElseThrow(() -> new IllegalStateException("TreasureMap always have boxes"));
     }
 
     public int getHeight() {
-        return 1 + boxes.stream().map(Box::position).map(Position::verticalAxis)
+        return 1 + boxes.stream().map(Box::getPosition).map(Position::verticalAxis)
                 .max(Integer::compareTo).orElseThrow(() -> new IllegalStateException("TreasureMap always have boxes"));
     }
 
@@ -27,11 +34,41 @@ public record TreasureMap(List<Box> boxes) {
         return boxes.stream().filter(Box::containsTreasure).toList();
     }
 
-    public List<Box> getBoxesWithPlayer() {
-        return boxes.stream().filter(Box::hasPlayer).toList();
+    public void pickUpTreasure(Position position) {
+        boxes.stream()
+                .filter(box -> box.getPosition().equals(position))
+                .forEach(box -> {
+                    if (box.containsTreasure()) {
+                        box.retrieveTreasury();
+                    }
+                });
     }
 
     public static TreasureMapBuilder builder() {
         return new TreasureMapBuilder();
+    }
+
+    public Box getNeighborAvailableBox(Position position, Orientation orientation) {
+
+        Position newPosition = switch (orientation) {
+            case EAST -> new Position(position.horizontalAxis() + 1, position.verticalAxis());
+            case WEST -> new Position(position.horizontalAxis() - 1, position.verticalAxis());
+            case NORTH -> new Position(position.horizontalAxis(), position.verticalAxis() + 1);
+            case SOUTH -> new Position(position.horizontalAxis(), position.verticalAxis() - 1);
+        };
+
+        return boxes.stream()
+                .filter(box -> box.getPosition().equals(newPosition))
+                .filter(box -> !box.isMountainBox())
+                .filter(box -> players.stream().noneMatch(player -> player.getPosition().equals(box.getPosition())))
+                .findFirst().orElse(null);
+    }
+
+    public List<Box> boxes() {
+        return boxes;
+    }
+
+    public void setPlayers(List<Player> players) {
+        this.players = players;
     }
 }

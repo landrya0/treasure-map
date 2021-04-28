@@ -1,75 +1,75 @@
 package it.carbon.exercice.treasuremap.domain.model;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public final class Player implements BoxItem {
+public final class Player {
     private final String name;
-    private final Position initialPosition;
-    private final Orientation initialOrientation;
     private final List<Motion> motionSequence;
-    private final List<Treasure> collectedTreasures = new ArrayList<>();
-    private Orientation currentOrientation;
+    private final TreasureMap treasureMap;
+    protected Position position;
+    protected Orientation orientation;
+    protected int treasureQuantity = 0;
+    private int remainingMotionsCount;
 
-    public Player(String name, Position initialPosition,
-                  Orientation initialOrientation,
-                  List<Motion> motionSequence) {
+    public Player(String name, List<Motion> motionSequence, TreasureMap treasureMap, Position position, Orientation orientation) {
         this.name = name;
-        this.initialPosition = initialPosition;
-        this.initialOrientation = initialOrientation;
         this.motionSequence = motionSequence;
-        this.currentOrientation = initialOrientation;
+        this.treasureMap = treasureMap;
+        this.position = position;
+        this.orientation = orientation;
+        this.remainingMotionsCount = motionSequence.size();
+    }
+
+    public TreasureMap getTreasureMap() {
+        return treasureMap;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
+    public Orientation getOrientation() {
+        return orientation;
+    }
+
+    public int getTreasureQuantity() {
+        return treasureQuantity;
+    }
+
+    public int getRemainingMotionsCount() {
+        return remainingMotionsCount;
+    }
+
+    public List<Motion> getMotionSequence() {
+        return motionSequence;
     }
 
     public String name() {
         return name;
     }
 
-    public Position initialPosition() {
-        return initialPosition;
+    public void playNextRound() {
+        if (remainingMotionsCount > 0) {
+            Motion nextMotion = motionSequence.get(motionSequence.size() - remainingMotionsCount);
+            switch (nextMotion) {
+                case MOVE_FORWARD -> moveForward();
+                case TURN_LEFT, TURN_RIGHT -> this.orientation = this.orientation.getOrientationAfterMotion(nextMotion);
+                default -> throw new UnsupportedOperationException("Motion " + nextMotion);
+            }
+            remainingMotionsCount--;
+        }
     }
 
-    public Orientation initialOrientation() {
-        return initialOrientation;
-    }
-
-    public List<Motion> motionSequence() {
-        return motionSequence;
-    }
-
-    public int treasuresCount() {
-        return collectedTreasures.size();
-    }
-
-    public Orientation getCurrentOrientation() {
-        return currentOrientation;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (Player) obj;
-        return Objects.equals(this.name, that.name) &&
-                Objects.equals(this.initialPosition, that.initialPosition) &&
-                Objects.equals(this.initialOrientation, that.initialOrientation) &&
-                Objects.equals(this.motionSequence, that.motionSequence);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, initialPosition, initialOrientation, motionSequence);
-    }
-
-    @Override
-    public String toString() {
-        return "Player[" +
-                "name=" + name + ", " +
-                "initialPosition=" + initialPosition + ", " +
-                "initialOrientation=" + initialOrientation + ", " +
-                "motionSequence=" + motionSequence + ", " +
-                "collectedTreasures=" + collectedTreasures + ']';
+    public void moveForward() {
+        Box neighborAvailableBox = treasureMap.getNeighborAvailableBox(position, orientation);
+        if (neighborAvailableBox != null) {
+            Position newPosition = neighborAvailableBox.getPosition();
+            this.position = newPosition;
+            if (neighborAvailableBox.containsTreasure()) {
+                treasureMap.pickUpTreasure(newPosition);
+                treasureQuantity++;
+            }
+        }
     }
 
 }
