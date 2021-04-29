@@ -27,12 +27,8 @@ public class AppRunner implements CommandLineRunner {
 
         playGameUseCase.startGame(treasureMap);
         PlayGameUseCase.RoundResult roundResult;
-        int round = 0;
         do {
             roundResult = playGameUseCase.playNextRound();
-            System.out.println("--------------------- Round " + round + " -------------------");
-            System.out.println(gameOutputWritter.convertToString(roundResult.treasureMap()));
-            round++;
         } while (roundResult.hasNextRound());
 
         gameOutputWritter.writeToFile(roundResult.treasureMap());

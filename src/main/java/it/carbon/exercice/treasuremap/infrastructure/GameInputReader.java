@@ -29,20 +29,13 @@ public class GameInputReader {
     public TreasureMap read(String inputFilePath) throws IOException {
         var inputLines = Files.readAllLines(Path.of(inputFilePath));
 
-        printInitialMap(inputLines);
         return read(inputLines);
-    }
-
-    private void printInitialMap(List<String> inputLines) {
-        System.out.println("------------------- initial treasureMap ----------------------");
-        System.out.println(String.join("\n", inputLines));
     }
 
     public TreasureMap readFromClasspath() throws IOException {
         InputStream resource = new ClassPathResource(inputDefaultFilePath).getInputStream();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
             var inputLines = reader.lines().collect(Collectors.toList());
-            printInitialMap(inputLines);
             return read(inputLines);
         }
     }
