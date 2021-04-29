@@ -3,12 +3,9 @@ package it.carbon.exercice.treasuremap.domain.usecase.service;
 import it.carbon.exercice.treasuremap.domain.model.Player;
 import it.carbon.exercice.treasuremap.domain.model.TreasureMap;
 import it.carbon.exercice.treasuremap.domain.port.MapStorageAdapter;
-import it.carbon.exercice.treasuremap.domain.port.PlayerStorageAdapter;
 import it.carbon.exercice.treasuremap.domain.usecase.PlayGameUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class PlayGameService implements PlayGameUseCase {

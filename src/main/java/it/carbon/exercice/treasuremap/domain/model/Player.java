@@ -40,10 +40,6 @@ public final class Player {
         return remainingMotionsCount;
     }
 
-    public List<Motion> getMotionSequence() {
-        return motionSequence;
-    }
-
     public String name() {
         return name;
     }

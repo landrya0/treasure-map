@@ -11,11 +11,6 @@ public final class TreasureMap {
         this.boxes = boxes;
     }
 
-    public Box getBox(Position position) {
-        return boxes.stream().filter(box -> box.getPosition().equals(position)).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Could not find box at position " + position));
-    }
-
     public int getWidth() {
         return 1 + boxes.stream().map(Box::getPosition).map(Position::horizontalAxis)
                 .max(Integer::compareTo).orElseThrow(() -> new IllegalStateException("TreasureMap always have boxes"));
@@ -62,10 +57,6 @@ public final class TreasureMap {
                 .filter(box -> !box.isMountainBox())
                 .filter(box -> players.stream().noneMatch(player -> player.getPosition().equals(box.getPosition())))
                 .findFirst().orElse(null);
-    }
-
-    public List<Box> boxes() {
-        return boxes;
     }
 
     public List<Player> getPlayers() {

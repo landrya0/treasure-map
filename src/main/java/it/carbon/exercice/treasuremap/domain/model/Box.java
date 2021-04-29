@@ -42,10 +42,6 @@ public final class Box {
         return position;
     }
 
-    public BoxType getType() {
-        return type;
-    }
-
     public int getTreasureQuantity() {
         return treasureQuantity;
     }
