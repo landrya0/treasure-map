@@ -53,8 +53,8 @@ public final class TreasureMap {
         Position newPosition = switch (orientation) {
             case EAST -> new Position(position.horizontalAxis() + 1, position.verticalAxis());
             case WEST -> new Position(position.horizontalAxis() - 1, position.verticalAxis());
-            case NORTH -> new Position(position.horizontalAxis(), position.verticalAxis() + 1);
-            case SOUTH -> new Position(position.horizontalAxis(), position.verticalAxis() - 1);
+            case NORTH -> new Position(position.horizontalAxis(), position.verticalAxis() - 1);
+            case SOUTH -> new Position(position.horizontalAxis(), position.verticalAxis() + 1);
         };
 
         return boxes.stream()
@@ -66,6 +66,10 @@ public final class TreasureMap {
 
     public List<Box> boxes() {
         return boxes;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
     }
 
     public void setPlayers(List<Player> players) {

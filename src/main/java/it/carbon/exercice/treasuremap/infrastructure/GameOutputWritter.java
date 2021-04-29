@@ -1,7 +1,6 @@
 package it.carbon.exercice.treasuremap.infrastructure;
 
 import it.carbon.exercice.treasuremap.domain.model.Orientation;
-import it.carbon.exercice.treasuremap.domain.model.Player;
 import it.carbon.exercice.treasuremap.domain.model.TreasureMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,14 +17,14 @@ public class GameOutputWritter {
     @Value("${output.default.file.path}")
     private String outputDefaultFilePath;
 
-    public void writeToFile(TreasureMap treasureMap, List<Player> players) throws IOException {
-        String resultAsString = convertToString(treasureMap, players);
+    public void writeToFile(TreasureMap treasureMap) throws IOException {
+        String resultAsString = convertToString(treasureMap);
         Path path = Paths.get(outputDefaultFilePath);
         byte[] strToBytes = resultAsString.getBytes();
         Files.write(path, strToBytes);
     }
 
-    public String convertToString(TreasureMap treasureMap, List<Player> players) {
+    public String convertToString(TreasureMap treasureMap) {
         return String.join("\n",
                 "C - " + treasureMap.getWidth() + " - " + treasureMap.getHeight(),
                 treasureMap.getMountainBoxes().stream()
@@ -35,7 +33,7 @@ public class GameOutputWritter {
                 treasureMap.getTreasureBoxes().stream()
                         .map(box -> "T - " + box.getPosition().horizontalAxis() + " - " + box.getPosition().verticalAxis() + " - " + box.getTreasureQuantity())
                         .collect(Collectors.joining("\n")),
-                players.stream()
+                treasureMap.getPlayers().stream()
                         .map(player -> "A - " + player.name() + " - " + player.getPosition().horizontalAxis() + " - " + player.getPosition().verticalAxis() + " - "
                                 + mapPlayerOrientation(player.getOrientation()) + " - " + player.getTreasureQuantity())
                         .collect(Collectors.joining("\n"))

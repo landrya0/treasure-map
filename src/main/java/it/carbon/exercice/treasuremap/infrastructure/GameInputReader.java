@@ -26,7 +26,7 @@ public class GameInputReader {
     @Value("${input.file.separator}")
     private String inputFileSeparator;
 
-    public GameData read(String inputFilePath) throws IOException {
+    public TreasureMap read(String inputFilePath) throws IOException {
         var inputLines = Files.readAllLines(Path.of(inputFilePath));
 
         printInitialMap(inputLines);
@@ -38,7 +38,7 @@ public class GameInputReader {
         System.out.println(String.join("\n", inputLines));
     }
 
-    public GameData readFromClasspath() throws IOException {
+    public TreasureMap readFromClasspath() throws IOException {
         InputStream resource = new ClassPathResource(inputDefaultFilePath).getInputStream();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
             var inputLines = reader.lines().collect(Collectors.toList());
@@ -47,7 +47,7 @@ public class GameInputReader {
         }
     }
 
-    private GameData read(List<String> lines) {
+    private TreasureMap read(List<String> lines) {
         List<Player> players = new ArrayList<>();
         TreasureMapBuilder mapBuilder = TreasureMap.builder();
         List<List<String>> linesArrayLists = lines.stream()
@@ -90,7 +90,7 @@ public class GameInputReader {
 
         treasureMap.setPlayers(players);
 
-        return new GameData(treasureMap, players);
+        return treasureMap;
     }
 
     private static Orientation mapOrientation(String symbol) {

@@ -15,27 +15,22 @@ public class PlayGameService implements PlayGameUseCase {
 
     @Autowired
     private MapStorageAdapter mapStorageAdapter;
-    @Autowired
-    private PlayerStorageAdapter playerStorageAdapter;
 
     @Override
-    public void startGame(TreasureMap treasureMap, List<Player> players) {
+    public void startGame(TreasureMap treasureMap) {
         mapStorageAdapter.storeOrUpdateMap(treasureMap);
-        playerStorageAdapter.storeOrUpdatePlayers(players);
     }
 
     @Override
     public RoundResult playNextRound() {
         TreasureMap treasureMap = mapStorageAdapter.getMap();
-        List<Player> players = playerStorageAdapter.getAllPlayers();
 
-        players.forEach(Player::playNextRound);
+        treasureMap.getPlayers().forEach(Player::playNextRound);
 
         // Etant donné qu'on est en mémoire les deux prochaine lignes ne sont pas utiles.
         // MAis c'est juste pour simuler le cas ou on veut sauvegarder l'etat du jeu en base à chaque round
         mapStorageAdapter.storeOrUpdateMap(treasureMap);
-        playerStorageAdapter.storeOrUpdatePlayers(players);
-        
-        return new RoundResult(treasureMap, players, players.stream().anyMatch(player -> player.getRemainingMotionsCount() > 0));
+
+        return new RoundResult(treasureMap, treasureMap.getPlayers().stream().anyMatch(player -> player.getRemainingMotionsCount() > 0));
     }
 }

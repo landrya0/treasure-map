@@ -1,5 +1,6 @@
 package it.carbon.exercice.treasuremap.application;
 
+import it.carbon.exercice.treasuremap.domain.model.TreasureMap;
 import it.carbon.exercice.treasuremap.domain.usecase.PlayGameUseCase;
 import it.carbon.exercice.treasuremap.infrastructure.GameInputReader;
 import it.carbon.exercice.treasuremap.infrastructure.GameOutputWritter;
@@ -20,20 +21,20 @@ public class AppRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        GameInputReader.GameData gameData = args.length > 0 ?
+        TreasureMap treasureMap = args.length > 0 ?
                 gameInputReader.read(args[0]) :
                 gameInputReader.readFromClasspath();
 
-        playGameUseCase.startGame(gameData.treasureMap(), gameData.players());
+        playGameUseCase.startGame(treasureMap);
         PlayGameUseCase.RoundResult roundResult;
         int round = 0;
         do {
             roundResult = playGameUseCase.playNextRound();
             System.out.println("--------------------- Round " + round + " -------------------");
-            System.out.println(gameOutputWritter.convertToString(roundResult.treasureMap(), roundResult.players()));
+            System.out.println(gameOutputWritter.convertToString(roundResult.treasureMap()));
             round++;
         } while (roundResult.hasNextRound());
 
-        gameOutputWritter.writeToFile(roundResult.treasureMap(), roundResult.players());
+        gameOutputWritter.writeToFile(roundResult.treasureMap());
     }
 }
